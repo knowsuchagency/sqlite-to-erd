@@ -12,7 +12,21 @@ Convert SQLite database schemas into Entity Relationship Diagrams (ERDs) using G
 
 ## Installation
 
-Requires Python 3.12+ and [uv](https://github.com/astral-sh/uv).
+### Option 1: Run directly with uvx (recommended)
+
+Requires Python 3.12+ and [uvx](https://github.com/astral-sh/uv).
+
+```bash
+# Install GraphViz (required for image generation)
+# macOS: brew install graphviz
+# Ubuntu: sudo apt-get install graphviz
+# Windows: https://graphviz.org/download/
+
+# Run directly from PyPI without installing
+uvx sqlite-to-erd database.db
+```
+
+### Option 2: Local installation
 
 ```bash
 # Clone the repository
@@ -32,11 +46,26 @@ uv sync
 
 ### Basic Usage
 
+**With uvx (run directly from PyPI):**
+
+```bash
+# Generate DOT format output
+uvx sqlite-to-erd database.db
+
+# Generate PNG directly
+uvx sqlite-to-erd database.db --png schema.png
+
+# Use simple box format instead of HTML tables
+uvx sqlite-to-erd database.db --simple
+```
+
+**With local installation:**
+
 ```bash
 # Generate DOT format output
 uv run sqlite_to_erd.py database.db
 
-# Generate PNG directly (new!)
+# Generate PNG directly
 uv run sqlite_to_erd.py database.db --png schema.png
 
 # Pipe to GraphViz for other formats
@@ -60,6 +89,7 @@ just complex-png # Creates complex_test.png
 ## Output Format
 
 The tool generates GraphViz DOT format, which can be:
+
 - Piped to `dot`, `neato`, `fdp`, etc. for different layouts
 - Exported to PNG, SVG, PDF, and other formats
 - Edited manually for fine-tuning
@@ -67,6 +97,7 @@ The tool generates GraphViz DOT format, which can be:
 ## Examples
 
 ### Simple Database
+
 ```bash
 echo "
 CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);
@@ -78,6 +109,10 @@ CREATE TABLE posts (
 );
 " | sqlite3 blog.db
 
+# With uvx
+uvx sqlite-to-erd blog.db --png blog.png
+
+# Or with local installation
 uv run sqlite_to_erd.py blog.db --png blog.png
 ```
 

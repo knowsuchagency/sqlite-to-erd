@@ -12,7 +12,10 @@ complex:
 complex-png:
     uv run sqlite_to_erd.py complex_test.db --png complex_test.png
 
-build:
+clean:
+    rm -rf dist/*
+
+build: clean
     uv build
 
 publish: build
