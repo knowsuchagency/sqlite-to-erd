@@ -13,13 +13,13 @@ This is a SQLite schema visualization tool that generates Entity Relationship Di
 uv sync
 
 # Run the tool
-uv run sqlite_to_erd.py <database.db> [metadata.db] [--simple]
+uv run sqlite_to_erd.py <database.db> [metadata.db] [--simple] [--png output.png]
 
 # Test with example databases
 just fk        # Generate DOT for test_fk.db
-just fk-png    # Generate PNG for test_fk.db
+just fk-png    # Generate PNG for test_fk.db using --png flag
 just complex   # Generate DOT for complex_test.db
-just complex-png # Generate PNG for complex_test.db
+just complex-png # Generate PNG for complex_test.db using --png flag
 ```
 
 ## Architecture
@@ -35,8 +35,9 @@ The entire application is in `sqlite_to_erd.py`:
 
 1. **Metadata Support**: Optional second database for clustering, styling, and filtering tables
 2. **Two Rendering Modes**: HTML-like tables with ports or simple box format (`--simple`)
-3. **Read-only Operation**: All databases opened in read-only mode for safety
-4. **Foreign Key Visualization**: Automatic detection and display of relationships
+3. **Direct PNG Generation**: Use `--png filename.png` to generate images without piping
+4. **Read-only Operation**: All databases opened in read-only mode for safety
+5. **Foreign Key Visualization**: Automatic detection and display of relationships
 
 ## Testing
 
@@ -45,3 +46,7 @@ Test databases are provided:
 - `complex_test.db` - More complex schema for testing
 
 Use the justfile commands to quickly test changes and verify output.
+
+## License
+
+This project is licensed under the MIT License.

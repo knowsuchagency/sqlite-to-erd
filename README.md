@@ -4,11 +4,12 @@ Convert SQLite database schemas into Entity Relationship Diagrams (ERDs) using G
 
 ## Features
 
-- =� Visualize SQLite database schemas as ERDs
-- = Automatic foreign key relationship detection
-- <� Metadata-driven clustering and styling
-- =� Two rendering modes: HTML-like tables or simple boxes
-- = Read-only database access for safety
+- 📊 Visualize SQLite database schemas as ERDs
+- 🔗 Automatic foreign key relationship detection
+- 🎨 Metadata-driven clustering and styling
+- 📐 Two rendering modes: HTML-like tables or simple boxes
+- 🖼️ Direct PNG generation with `--png` flag
+- 🔒 Read-only database access for safety
 
 ## Installation
 
@@ -36,11 +37,17 @@ uv sync
 # Generate DOT format output
 uv run sqlite_to_erd.py database.db
 
-# Pipe to GraphViz to create an image
-uv run sqlite_to_erd.py database.db | dot -Tpng -o schema.png
+# Generate PNG directly (new!)
+uv run sqlite_to_erd.py database.db --png schema.png
+
+# Pipe to GraphViz for other formats
+uv run sqlite_to_erd.py database.db | dot -Tsvg -o schema.svg
 
 # Use simple box format instead of HTML tables
 uv run sqlite_to_erd.py database.db --simple
+
+# Combine options
+uv run sqlite_to_erd.py database.db --simple --png simple_schema.png
 ```
 
 ### With Metadata Database
@@ -116,7 +123,7 @@ CREATE TABLE posts (
 );
 " | sqlite3 blog.db
 
-uv run sqlite_to_erd.py blog.db | dot -Tpng -o blog.png
+uv run sqlite_to_erd.py blog.db --png blog.png
 ```
 
 ### With Clustering
@@ -140,7 +147,7 @@ INSERT INTO cluster_labels VALUES
     ('content', 'Content Management', 'lightgreen');
 " | sqlite3 metadata.db
 
-uv run sqlite_to_erd.py blog.db metadata.db | dot -Tpng -o blog_clustered.png
+uv run sqlite_to_erd.py blog.db metadata.db --png blog_clustered.png
 ```
 
 ## Development
@@ -157,7 +164,7 @@ just complex-png
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 

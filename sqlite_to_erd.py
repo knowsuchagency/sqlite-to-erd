@@ -1,5 +1,6 @@
 import sqlite3
 import sys
+import subprocess
 import click
 
 
@@ -99,12 +100,47 @@ def print_foreign_keys(conn, table_name, simple=False):
 @click.argument('dbname', type=click.Path(exists=True))
 @click.argument('metadb', type=click.Path(exists=True), required=False)
 @click.option('--simple', '-s', is_flag=True, help='Use simple text labels instead of HTML-like table formatting')
-def main(dbname, metadb, simple):
+@click.option('--png', type=click.Path(), help='Generate PNG file directly using GraphViz dot')
+def main(dbname, metadb, simple, png):
     """Generate a GraphViz DOT file from a SQLite database schema.
     
     DBNAME is the path to the SQLite database to visualize.
     METADB is an optional metadata database for clustering and styling.
     """
+    # If PNG output is requested, capture DOT output and pipe through GraphViz
+    if png:
+        import io
+        import contextlib
+        
+        # Capture stdout
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            generate_dot(dbname, metadb, simple)
+        
+        # Pipe through dot to generate PNG
+        try:
+            dot_process = subprocess.run(
+                ['dot', '-Tpng', '-o', png],
+                input=output.getvalue(),
+                text=True,
+                capture_output=True,
+                check=True
+            )
+            print(f"PNG generated: {png}", file=sys.stderr)
+        except subprocess.CalledProcessError as e:
+            print(f"Error running GraphViz dot: {e}", file=sys.stderr)
+            if e.stderr:
+                print(e.stderr, file=sys.stderr)
+            sys.exit(1)
+        except FileNotFoundError:
+            print("Error: GraphViz 'dot' command not found. Please install GraphViz.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        generate_dot(dbname, metadb, simple)
+
+
+def generate_dot(dbname, metadb, simple):
+    """Generate DOT output for the database schema."""
     try:
         # Open main database
         conn = sqlite3.connect(f"file:{dbname}?mode=ro", uri=True)
