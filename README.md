@@ -16,7 +16,7 @@ Requires Python 3.12+ and [uv](https://github.com/astral-sh/uv).
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sqlite-to-erd.git
+git clone https://github.com/knowsuchagency/sqlite-to-erd.git
 cd sqlite-to-erd
 
 # Install dependencies
