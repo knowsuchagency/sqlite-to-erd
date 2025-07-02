@@ -4,47 +4,16 @@ import subprocess
 import click
 
 
-def get_table_list_query(have_meta):
-    """Return the appropriate SQL query for listing tables based on metadata availability."""
-    if not have_meta:
-        return """
-            SELECT tbl_name, NULL AS label, NULL AS color, NULL AS clusterid 
-            FROM sqlite_master WHERE type='table'
-        """
-    
-    return """
-        SELECT sqlite_master.tbl_name AS tbl_name, 
-               meta.cluster.label AS label, 
-               meta.cluster.color AS color, 
-               meta.cluster.clusterid AS clusterid
-        FROM sqlite_master
-        LEFT JOIN meta.tbl_cluster ON sqlite_master.tbl_name=meta.tbl_cluster.tbl_name
-        LEFT JOIN meta.cluster ON meta.tbl_cluster.clusterid=meta.cluster.clusterid
-        LEFT JOIN meta.ignorelist ON sqlite_master.tbl_name=meta.ignorelist.tbl_name
-        WHERE meta.ignorelist.tbl_name IS NULL
-               AND main.sqlite_master.type='table'
-        GROUP BY sqlite_master.tbl_name
-        ORDER BY meta.cluster.clusterid
-    """
+def get_table_list_query():
+    """Return SQL query for listing tables."""
+    return "SELECT tbl_name FROM sqlite_master WHERE type='table'"
 
 
-def print_graph_settings(conn, have_meta):
-    """Print graph settings from metadata or defaults."""
-    if have_meta:
-        try:
-            cursor = conn.execute("SELECT setting FROM meta.graphsettings")
-            for row in cursor:
-                print(row[0])
-        except sqlite3.Error as e:
-            print(f"Warning: Cannot find meta.graphsettings: {e}", file=sys.stderr)
-            # Fall back to defaults
-            print("rankdir=LR")
-            print("splines=true")
-            print("overlap=scale")
-    else:
-        print("rankdir=LR")
-        print("splines=true")
-        print("overlap=scale")
+def print_graph_settings():
+    """Print default graph settings."""
+    print("rankdir=LR")
+    print("splines=true")
+    print("overlap=scale")
 
 
 def print_table_node(conn, table_name, cols=4, simple=False):
@@ -98,14 +67,12 @@ def print_foreign_keys(conn, table_name, simple=False):
 
 @click.command()
 @click.argument('dbname', type=click.Path(exists=True))
-@click.argument('metadb', type=click.Path(exists=True), required=False)
 @click.option('--simple', '-s', is_flag=True, help='Use simple text labels instead of HTML-like table formatting')
 @click.option('--png', type=click.Path(), help='Generate PNG file directly using GraphViz dot')
-def main(dbname, metadb, simple, png):
+def main(dbname, simple, png):
     """Generate a GraphViz DOT file from a SQLite database schema.
     
     DBNAME is the path to the SQLite database to visualize.
-    METADB is an optional metadata database for clustering and styling.
     """
     # If PNG output is requested, capture DOT output and pipe through GraphViz
     if png:
@@ -115,7 +82,7 @@ def main(dbname, metadb, simple, png):
         # Capture stdout
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            generate_dot(dbname, metadb, simple)
+            generate_dot(dbname, simple)
         
         # Pipe through dot to generate PNG
         try:
@@ -136,24 +103,16 @@ def main(dbname, metadb, simple, png):
             print("Error: GraphViz 'dot' command not found. Please install GraphViz.", file=sys.stderr)
             sys.exit(1)
     else:
-        generate_dot(dbname, metadb, simple)
+        generate_dot(dbname, simple)
 
 
-def generate_dot(dbname, metadb, simple):
+def generate_dot(dbname, simple):
     """Generate DOT output for the database schema."""
     try:
         # Open main database
         conn = sqlite3.connect(f"file:{dbname}?mode=ro", uri=True)
         
-        # Attach metadata database if provided
-        have_meta = False
-        if metadb:
-            try:
-                conn.execute(f'ATTACH DATABASE "{metadb}" AS meta')
-                have_meta = True
-            except sqlite3.Error as e:
-                print(f"Error attaching meta db: {e}", file=sys.stderr)
-                sys.exit(1)
+        # No metadata database support
         
         # Start DOT graph
         print("digraph sqliteschema {")
@@ -163,42 +122,18 @@ def generate_dot(dbname, metadb, simple):
             print("node [shape=plaintext];")
         
         # Print graph settings
-        print_graph_settings(conn, have_meta)
+        print_graph_settings()
         
         # Get table list
-        table_query = get_table_list_query(have_meta)
+        table_query = get_table_list_query()
         cursor = conn.execute(table_query)
         tables = cursor.fetchall()
         
-        # Track current cluster
-        curr_cluster = -1
-        
-        # Print table nodes with clustering
+        # Print table nodes
         for table in tables:
-            tbl_name, label, color, cluster_id = table
-            
-            # Handle cluster transitions
-            if cluster_id is None:
-                cluster_id = -1
-            
-            if cluster_id != curr_cluster and curr_cluster != -1:
-                print("}")  # Close previous cluster
-            
-            if cluster_id != curr_cluster and cluster_id != -1:
-                print(f"subgraph cluster_{cluster_id} {{")
-                if label:
-                    print(f'label="{label}"')
-                if color:
-                    print(f'color="{color}"')
-            
-            curr_cluster = cluster_id
-            
+            tbl_name = table[0]
             # Print table node
             print_table_node(conn, tbl_name, simple=simple)
-        
-        # Close last cluster if needed
-        if curr_cluster != -1:
-            print("}")
         
         # Print foreign key relationships
         cursor = conn.execute(table_query)
