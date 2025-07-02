@@ -1,0 +1,23 @@
+include LICENSE
+include README.md
+include pyproject.toml
+
+# Exclude test databases and generated files
+exclude *.db
+exclude *.png
+
+# Exclude development files
+exclude justfile
+exclude .python-version
+exclude CLAUDE.md
+exclude .gitignore
+exclude uv.lock
+
+# Exclude directories
+prune .claude
+
+# Exclude build artifacts
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.egg-info
+global-exclude .DS_Store

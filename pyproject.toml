@@ -1,12 +1,36 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sqlite-to-erd"
-version = "0.3.0"
+version = "0.4.0"
 description = "Generate ERD diagrams from SQLite databases"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+authors = [
+    {name = "Stephan Fitzpatrick", email = "knowsuchagency@gmail.com"}
+]
+keywords = ["sqlite", "erd", "database", "visualization", "graphviz", "diagram"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
 dependencies = [
     "click>=8.2.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/knowsuchagency/sqlite-to-erd"
+Repository = "https://github.com/knowsuchagency/sqlite-to-erd.git"
+Issues = "https://github.com/knowsuchagency/sqlite-to-erd/issues"
 
 [project.scripts]
 sqlite-to-erd = "sqlite_to_erd:main"

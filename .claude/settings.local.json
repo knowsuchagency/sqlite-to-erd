@@ -3,7 +3,13 @@
     "allow": [
       "Bash(just:*)",
       "Bash(ls:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(find:*)",
+      "Bash(uv build)",
+      "Bash(tar:*)",
+      "Bash(rm:*)",
+      "Bash(uv publish:*)",
+      "Bash(env)"
     ],
     "deny": []
   }
